@@ -31,16 +31,17 @@ def decode_roaring(data):
     return output
 
 class WebSocket():
-    def __init__(self, eid):
+    def __init__(self, eid, x):
         self.eid = eid
         self.prev_seats = []
+        self.x = x
 
     async def connect_socket(self):
         user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
         url = "wss://marketplace.prod.pub-tmaws.io/avpp/v2/graphql?app=PRD2663_EDPAPP&sessionId=3%3AMcVO0lhBDLpXGH7e%2ByJnhA%3D%3D%3A6re2IvK%2BZ6zVTCPMozVowLfsK6TdQ3gi%2FLxWqIircP5Nt2WzBqPU6pFhNAqUFbUy5iYzXYSN0MVKAiSrI5SNI4pB0FUfMq502Sur84GJgp7TWxGtzV5bmeMJz1JEpr42ulTnfah03VPLgzdnKxwYB%2Bk4eQBztZM%2BJA7kONg%2FNXicKfuzPOChYGrylaP1yEmggopRE19OoIAQk1MEKCcJRRRD3fLrVm6%2FF2AVw5iDuQFHN%2B7L2guJo957vxTc4trLZEHWZZFO4In8uk3KbWoqDFQ4XTmrSs2I3pevOYYO8tzQCc0gBjVreLD4MDMHxPYUZpcKki7xVYZNOYktBSyxgO9WiHzVGkOzsqD1aZ8octSjdDJALC9%2FuceKHq9k4E1kCSvD7Wp6S1rRliynluMTTqpNyNEhDkxyNBwrQJpu%2FXyaol9boZo%2F4NGbsB7CJ3rQlyg%2F99dT0%2F9T8CE0Z1ZiEozfFmIK9l8k9vQ7UtI26Q0%3D%3Ac8ZEB3sV%2FOQYJmiqv3vdqIN8eeQ5PyyPlp%2FXa2Nms1k%3D"
-        log.warning(f"Connecting to {self.eid} Socket...")
+        # log.warning(f"Connecting to {self.eid} Socket...")
+        self.first_run = True
         while True:
-            first_run = True
             try:
                 async with aiohttp.ClientSession() as session:
                     async with session.ws_connect(
@@ -62,26 +63,32 @@ class WebSocket():
                                         new_seats = [d for d in restocking_seats if d not in self.prev_seats]
                                         self.prev_seats = restocking_seats
                                     else: new_seats = None
+
+                                    if self.x == 1:
+                                        await ws.close()
                                     
                                 except Exception as e:
                                     continue
 
-                                if new_seats and not first_run:
+                                if new_seats and not self.first_run:
                                     ## SEND VIA NATS
                                     process_new_seats(self.eid, new_seats)
-                                first_run = False
+                                if new_seats and self.first_run:
+                                    print(f'Skipping push for first run')
+                                    self.first_run = False
+                                self.first_run = False
 
             except asyncio.CancelledError:
-                log.warning(f"WebSocket connection for {self.eid} cancelled.")
+                # log.warning(f"WebSocket connection for {self.eid} cancelled.")
                 if session:
                     await session.close()
             except aiohttp.WebSocketError as e:
-                log.warning(f"Socket error for {self.eid} - {traceback.format_exc()}")
+                # log.warning(f"Socket error for {self.eid} - {traceback.format_exc()}")
                 # log.warning(f"Socket error for {self.eid} - {e}")
                 await asyncio.sleep(3)
                 continue
             except Exception as e:
-                log.warning(f"Socket error for {self.eid} - {traceback.format_exc()}")
+                # log.warning(f"Socket error for {self.eid} - {traceback.format_exc()}")
                 # log.warning(f"Socket error for {self.eid} - {e}")
                 await asyncio.sleep(3)
                 continue
