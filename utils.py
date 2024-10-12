@@ -20,7 +20,7 @@ for e in proxies:
     pl.append(e.split(':')[2]+':'+e.split(':')[3]+'@'+e.split(':')[0]+':'+e.split(':')[1])
 
 def resi_proxies():
-    return f'http://GregCronheim-res-mx-sid-{random.randint(0,99999)}:RcoPEhFwFhfpATw@gw-am.ntnt.io:5959'
+    return f'http://GregCronheim-res-us-sid-{random.randint(0,99999)}:RcoPEhFwFhfpATw@gw-am.ntnt.io:5959'
     return {
         'http': f'http://GregCronheim-res-us-sid-{random.randint(0,99999)}:RcoPEhFwFhfpATw@gw-am.ntnt.io:5959',
         'https': f'http://GregCronheim-res-us-sid-{random.randint(0,99999)}:RcoPEhFwFhfpATw@gw-am.ntnt.io:5959'                
