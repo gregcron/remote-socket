@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from pandas import read_csv
 import random
+import string
 import time
 
 from nats_connector import NatsManager
@@ -20,7 +21,9 @@ for e in proxies:
     pl.append(e.split(':')[2]+':'+e.split(':')[3]+'@'+e.split(':')[0]+':'+e.split(':')[1])
 
 def resi_proxies():
-    return f'http://PP_F4MGBE5-country-US-session-{random.randint(0,99999)}:gofnxddc@event.porterproxies.com:61234'
+    def random_string(length=7):
+        return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    return f'http://tl-44c3254e3ec618f65249d960a3465f21580658b3c61a98a42c0e10b3796256bf-country-US-session-{random_string()}:yjp9qrbcms1q@zproxy.luminati.io:31111'
     # return f'http://GregCronheim-res-us-sid-{random.randint(0,99999)}:RcoPEhFwFhfpATw@gw-am.ntnt.io:5959'
 
 def isp_proxies():
